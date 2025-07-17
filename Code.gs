@@ -33,8 +33,6 @@ const SORTED_COLOR_IDENTITY_NAMES = {
   "BGURW": "Five-Color"
 };
 
-
-
 function fetchColorIdentity(commanderName) {
   if (!commanderName) return "Unknown";
 
@@ -268,6 +266,15 @@ function updateStats() {
       topTarget1,
       topTarget2
     ]);
+
+      const playerHeaderRange = statsSheet.getRange(1, 1, 1, playerHeaders.length);
+  playerHeaderRange.setFontWeight("bold").setBackground("#1a73e8").setFontColor("white").setHorizontalAlignment("center");
+
+  if (Object.keys(playerStats).length > 0) {
+    const playerDataRange = statsSheet.getRange(2, 1, Object.keys(playerStats).length, playerHeaders.length);
+    playerDataRange.setBackgrounds(generateStripedRows(Object.keys(playerStats).length, "#f1f3f4", "#ffffff", playerHeaders.length));
+    playerDataRange.setFontWeight("bold").setHorizontalAlignment("center");
+  }
   }
 
   // Add spacing after player stats section
@@ -515,7 +522,7 @@ statsSheet.getRange(colorTableStartRow + 2, popularityStartCol, summaryRows.leng
   .setFontWeight("bold")
   .setHorizontalAlignment("center");
 
-row = statsSheet.getLastRow() + 2;
+  row = statsSheet.getLastRow() + 2;
 
 
   // Final formatting and cleanup
@@ -546,16 +553,7 @@ row = statsSheet.getLastRow() + 2;
     }
   }
 
-  const playerHeaderRange = statsSheet.getRange(1, 1, 1, playerHeaders.length);
-  playerHeaderRange.setFontWeight("bold").setBackground("#1a73e8").setFontColor("white").setHorizontalAlignment("center");
-
-  if (Object.keys(playerStats).length > 0) {
-    const playerDataRange = statsSheet.getRange(2, 1, Object.keys(playerStats).length, playerHeaders.length);
-    playerDataRange.setBackgrounds(generateStripedRows(Object.keys(playerStats).length, "#f1f3f4", "#ffffff", playerHeaders.length));
-    playerDataRange.setFontWeight("bold").setHorizontalAlignment("center");
-  }
-
-statsSheet.setRowHeights(1, statsSheet.getMaxRows(), 25);
+  statsSheet.setRowHeights(1, statsSheet.getMaxRows(), 25);
 
   // --- CURSOR PARKING LOT (with Blue Header and Padding) ---
   const parkingLotLabel = "AFK";
@@ -605,45 +603,4 @@ function generateStripedRows(rowCount, color1, color2, colCount) {
     result.push(new Array(colCount).fill(i % 2 === 0 ? color1 : color2));
   }
   return result;
-}
-
-
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('MTG Tools')
-    .addItem('Duplicate Match Sheet', 'duplicateMatchSheet')
-    .addToUi();
-}
-
-function duplicateMatchSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheets = ss.getSheets();
-  
-  const baseName = "Match";
-  const templateName = "Template";
-
-  const templateSheet = ss.getSheetByName(templateName);
-  if (!templateSheet) {
-    SpreadsheetApp.getUi().alert(`Template sheet named "${templateName}" not found!`);
-    return;
-  }
-
-  // Find max increment number for existing Match sheets
-  const regex = new RegExp(`^${baseName} (\\d+)$`);
-  let maxNum = 0;
-
-  sheets.forEach(sheet => {
-    const match = sheet.getName().match(regex);
-    if (match) {
-      const num = parseInt(match[1], 10);
-      if (num > maxNum) maxNum = num;
-    }
-  });
-
-  const newName = `${baseName} ${maxNum + 1}`;
-  const newSheet = templateSheet.copyTo(ss).setName(newName);
-  ss.setActiveSheet(newSheet);
-  ss.moveActiveSheet(sheets.length + 1);
-
-  SpreadsheetApp.getUi().alert(`Duplicated "${templateName}" as "${newName}"`);
 }
